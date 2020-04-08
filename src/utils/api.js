@@ -26,8 +26,8 @@ export default {
         return req.del(url, form);
     },
     //设置 文件可见性
-    patchFileVisible(url, form) {
-        return req.patch(url, form);
+    postFileVisible(url, form) {
+        return req.post(url, form);
     },
     //复制移动 文件
     postFiles(url, form) {

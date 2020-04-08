@@ -24,9 +24,9 @@
            @click="handleChoose">
         <Icon type="ios-camera-outline" :style="disabled ?'color:red':''" size="30"></Icon>
       </div>
-      <span v-show="!!error" style="color: red;">
-                {{error}}
-            </span>
+      <!--<span v-show="!!error" style="color: red;">-->
+                <!--{{error}}-->
+            <!--</span>-->
       <slot name="tips">
 
       </slot>
@@ -159,7 +159,7 @@
                                          <DropdownItem @click.prevent.native="handleEditImage(item)">
                                             编辑图片
                                          </DropdownItem>
-                                         <DropdownItem @click.prevent.native="insertImages">
+                                         <DropdownItem v-if="isShowInsertImgBtn" @click.prevent.native="insertImages">
                                             <slot>
                                                  插入图片
                                             </slot>
@@ -174,9 +174,9 @@
                                                       @click.prevent.native="handleRename(item)">重命名
                                         </DropdownItem>
                                         <DropdownItem @click.prevent.native="handleCopyLink(item)">复制链接</DropdownItem>
-                                        <DropdownItem
-                                          @click.prevent.native="handleCopyMDLink(item)">复制MarkDown链接
-                                        </DropdownItem>
+                                        <!--<DropdownItem-->
+                                          <!--@click.prevent.native="handleCopyMDLink(item)">复制MarkDown链接-->
+                                        <!--</DropdownItem>-->
                                         <DropdownItem @click.prevent.native="handleDownload(item)">下载文件</DropdownItem>
                                         <DropdownItem v-if="urls.delete" @click.prevent.native="handleDestroy(item)"
                                                       style="color: #ed4014">删除
@@ -246,9 +246,9 @@
                                                       @click.prevent.native="handleRename(item)">重命名
                                         </DropdownItem>
                                         <DropdownItem @click.prevent.native="handleCopyLink(item)">复制链接</DropdownItem>
-                                        <DropdownItem
-                                          @click.prevent.native="handleCopyMDLink(item)">复制MarkDown链接
-                                        </DropdownItem>
+                                        <!--<DropdownItem-->
+                                          <!--@click.prevent.native="handleCopyMDLink(item)">复制MarkDown链接-->
+                                        <!--</DropdownItem>-->
                                         <DropdownItem @click.prevent.native="handleDownload(item)">下载文件</DropdownItem>
                                         <DropdownItem v-if="urls.delete" @click.prevent.native="handleDestroy(item)"
                                                       style="color: #ed4014">删除
@@ -330,7 +330,7 @@
           </Button>
         </ButtonGroup>
 
-        <Button type="info" :disabled="insertStatus" @click="insertImages">
+        <Button type="info" v-if="isShowInsertImgBtn" :disabled="insertStatus" @click="insertImages">
           <slot>
             插入图片
           </slot>
@@ -587,6 +587,7 @@
           current: false,     //是否显示当前版本
           check: false,       //是否检查图片宽高
           width: 1300,        //默认媒体库宽度 支持固定 或者 百分比
+          isShowInsertImgBtn:true,//是否显示插入图片按钮
         },
       },
       id: {       //dom ID
@@ -1053,7 +1054,7 @@
         this.query.page = 1;
         this.query.pid = folder[this.config.key];
 
-        this.query.keyword = null;
+        // this.query.keyword = null;
 
         this.currentFolder = folder;
         this.getFiles();
@@ -1180,12 +1181,11 @@
           visible: visible,
         };
 
-        API.patchFileVisible(this.urls.visible, form).then(res => {
+        API.postFileVisible(this.urls.visible, form).then(res => {
           if (res.status === 200) {
             this.$Notice.success({
               title: '设置成功',
             });
-
             this.getFiles();
           } else {
             this.$Notice.error({
@@ -1295,7 +1295,7 @@
         let error = '请上传以下格式文件 ' + this.config.format.join('|');
         this.error = error;
 
-        Notice.warning({
+        this.$Notice.warning({
           title: '文件格式错误',
           desc: error,
         });
@@ -1304,7 +1304,7 @@
         let error = '请上传 ' + Math.ceil(this.config.size / 1024) + 'M 内文件';
         this.error = error;
 
-        Notice.warning({
+        this.$Notice.warning({
           title: '文件大小错误',
           desc: error,
         });
@@ -1494,14 +1494,14 @@
           if (valid) {
             API.getFilesByServer(this.urls.remote, this.cloud.form).then(res => {
               if (res.status === 200) {
-                Notice.success({
+                this.$Notice.success({
                   title: '文件上传成功',
                   desc: '',
                 });
 
                 this.getFiles();
               } else {
-                Notice.error({
+                this.$Notice.error({
                   title: '文件上传失败',
                   desc: res.msg,
                 });
@@ -1510,7 +1510,7 @@
               console.error(error);
             });
           } else {
-            Notice.warning({
+            this.$Notice.warning({
               title: '表单参数有误',
               desc: '请检查'
             });
@@ -1542,12 +1542,12 @@
         let reg = /^[\u4E00-\u9FA5A-Za-z0-9_-]+$/;
 
         if (!reg.test(file.name.replace(/\s+/g, '').replace('.', ''))) {
-          Notice.warning({
+          this.$Notice.warning({
             title: '文件名包含特殊字符',
             desc: '请修改' + file.name + '文件名',
           });
 
-          Notice.info({
+          this.$Notice.info({
             title: '文件名仅支持以下字符',
             desc: '中英文,数字,下划线减号空格【_，-， 】',
             duration: 0,
@@ -1565,7 +1565,7 @@
             if (res.status == 200) {
               this.uploadFiles(file);
             } else {
-              Notice.warning({
+              this.$Notice.warning({
                 title: res.msg,
                 desc: '请修改【' + file.name + '】文件名',
               });
@@ -1573,7 +1573,7 @@
           });
         } else {
           API.headFile(this.formatUrl(this.urls.upload) + '/' + form.path).then(res => {
-            Notice.warning({
+            this.$Notice.warning({
               title: '文件已存在',
               desc: '请修改【' + file.name + '】文件名'
             });
@@ -1672,11 +1672,11 @@
 
         this.cropper.visible = false;
 
-        this.uploadList.push({
-          type: 'file',
-          checked: true,
-          url: this.formatUrl(this.urls.upload) + '/' + this.formatUrl(this.parentFolder.path) + '/' + file.name,
-        });
+        // this.uploadList.push({
+        //   type: 'file',
+        //   checked: true,
+        //   url: this.formatUrl(this.urls.upload) + '/' + this.formatUrl(this.parentFolder.path) + '/' + file.name,
+        // });
 
         if (!!this.urls.return) {
           let form = {
@@ -1687,13 +1687,13 @@
           API.postFile(this.urls.return, form).then(res => {
             if (res.status === 200) {
               this.$Notice.success({
-                title: '回调成功',
-                desc: 'client'
+                title: '上传文件成功',
+                desc: ''
               });
             } else {
               this.$Notice.error({
-                title: '回调失败',
-                desc: 'client'
+                title: '上传文件失败',
+                desc: res.msg
               });
             }
 
@@ -1703,14 +1703,14 @@
           });
         } else {
           if (res.status == 200) {
-            Notice.success({
+            this.$Notice.success({
               title: '上传成功',
               desc: 'server'
             });
 
             this.getFiles();
           } else {
-            Notice.error({
+            this.$Notice.error({
               title: '回调失败',
               desc: '请联系管理员'
             });
@@ -1720,7 +1720,7 @@
       handleError(err) {
         console.error(err);
 
-        Notice.error({
+        this.$Notice.error({
           title: '上传失败',
           desc: '请联系管理员'
         });
@@ -1737,17 +1737,17 @@
 
         let files = [];
 
-        this.uploadList.forEach(function (current) {
-          let obj = {};
-
-          if (current.url) {
-            obj.url = current.url;
-          } else {
-            obj.url = that.formatUrl(current.host) + '/' + current.path;
-          }
-
-          files.push(obj);
-        });
+        // this.uploadList.forEach(function (current) {
+        //   let obj = {};
+        //
+        //   if (current.url) {
+        //     obj.url = current.url;
+        //   } else {
+        //     obj.url = that.formatUrl(current.host) + '/' + current.path;
+        //   }
+        //
+        //   files.push(obj);
+        // });
 
         items.forEach(function (current) {
           let obj = {};
@@ -1768,7 +1768,7 @@
         }
 
         if (files.length > this.max) {
-          Notice.info({
+          this.$Notice.info({
             title: '提示',
             desc: '文件最多选择' + this.max + '张,多选部分将被舍弃',
           });
@@ -1855,13 +1855,15 @@
         this.getFiles();
       },
       handleHome() {
+        this.query.keyword = null;
         this.query.pid = null;
         this.query.page = 1;
         this.getFiles();
       },
       handleRefresh() {
+        this.query.keyword = null;
         this.getFiles();
-        Notice.success({
+        this.$Notice.success({
           title: '刷新成功',
           desc: ' '
         });
@@ -1875,13 +1877,13 @@
 
         API.delFiles(this.urls.delete, form).then(res => {
           if (res.status === 200) {
-            Notice.success({
+            this.$Notice.success({
               title: '删除成功',
               desc: ' '
             });
             this.getFiles();
           } else {
-            Notice.error({
+            this.$Notice.error({
               title: '删除失败',
               desc: res.msg,
             });
@@ -1907,7 +1909,6 @@
                   title: '操作成功',
                   desc: ' ',
                 });
-
                 this.getFiles();
               } else {
                 this.$Notice.error({
@@ -1936,14 +1937,14 @@
           if (valid) {
             API.postFolder(this.urls.create, this.createFolder.form).then(res => {
               if (res.status === 200) {
-                Notice.success({
+                this.$Notice.success({
                   title: '目录创建成功',
                   desc: ' '
                 });
 
                 this.getFiles();
               } else {
-                Notice.error({
+                this.$Notice.error({
                   title: '目录创建失败',
                   desc: res.msg,
                 });
@@ -1957,7 +1958,7 @@
           } else {
             this.createFolder.loading = false;
 
-            Notice.warning({
+            this.$Notice.warning({
               title: '表单输入有误',
               desc: '请检查'
             });
